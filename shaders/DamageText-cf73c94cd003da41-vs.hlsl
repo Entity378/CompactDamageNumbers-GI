@@ -412,7 +412,7 @@ void main(
     // r1.xyzw = cb0[3].xyzw * r0.xxxx + r1.xyzw;
     // r0.xyzw = cb0[5].xyzw * r0.zzzz + r1.xyzw;
     // o1.xyzw = cb0[6].xyzw + r0.xyzw;
-    o1.xyzw = mul(globals.projection, float4(r0.xyz, 1));
+    o1.xyzw = mul(float4(r0.xyz, 1), globals.projection);
     // o3.xyzw = float4(0,0,0,0);
     o3.xyzw = float4(0,0,suffix_flag,0);
     o4.x = v1.x;
