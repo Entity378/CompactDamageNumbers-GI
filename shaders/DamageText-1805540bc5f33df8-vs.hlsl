@@ -22,7 +22,7 @@ struct InstanceData {
 
 struct Globals {
     float4 reserved[3];
-    float4x4 projection;
+    row_major float4x4 projection;
     float2 outline_width;
     float2 reserved_2;
 };
