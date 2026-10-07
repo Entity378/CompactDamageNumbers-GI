@@ -428,7 +428,7 @@ void main(
     // r2.xyzw = cb0[3].xyzw * r0.xxxx + r2.xyzw;
     // r0.xyzw = cb0[5].xyzw * r0.zzzz + r2.xyzw;
     // o1.xyzw = cb0[6].xyzw + r0.xyzw;
-    o1.xyzw = mul(globals.projection, float4(r0.xyz, 1));
+    o1.xyzw = mul(float4(r0.xyz, 1), globals.projection);
     // Flag in w: TEXCOORD1.xyz holds the gradient.
     // r1.w = 0;
     r1.w = suffix_flag;
