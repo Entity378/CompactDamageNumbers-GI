@@ -131,18 +131,18 @@ bool same_anchor(int neighbor_glyph, int glyph)
 }
 
 // Returns false if the scan hits MAX_STRING_SCAN on either side.
-bool find_string(int glyph, int instance_count, out int string_start, out int string_end)
+bool find_string(int glyph, int draw_start, int draw_end, out int string_start, out int string_end)
 {
     // Stop when x stops increasing: leftover copies of a number restart from the left.
     string_start = glyph;
-    [loop] while (string_start > 0 && glyph - string_start < MAX_STRING_SCAN) {
+    [loop] while (string_start > draw_start && glyph - string_start < MAX_STRING_SCAN) {
         if (!same_anchor(string_start - 1, glyph) ||
             data[string_start - 1].quad_x[0] >= data[string_start].quad_x[0])
             break;
         string_start--;
     }
     string_end = glyph + 1;
-    [loop] while (string_end < instance_count && string_end - 1 - glyph < MAX_STRING_SCAN) {
+    [loop] while (string_end < draw_end && string_end - 1 - glyph < MAX_STRING_SCAN) {
         if (!same_anchor(string_end, glyph) ||
             data[string_end].quad_x[0] <= data[string_end - 1].quad_x[0])
             break;
@@ -264,13 +264,15 @@ void place_suffix_cell(int cell, float pen, float baseline, float font_size, int
 // Returns true if the vertex now belongs to a suffix cell (PS flag).
 bool compact_number(int glyph, int vertex, inout float2 uv, inout float2 quad)
 {
-    // Past instance_count, cb2 still holds glyphs from the previous draw.
+    // The draw reads glyphs cb1[0].x to cb1[0].x + instance_count - 1.
+    // The rest of cb2 holds leftovers from other draws.
     int instance_count = (int)IniParams[INSTANCE_COUNT_SLOT].x;
     if (instance_count <= 0 || instance_count > MAX_GLYPHS)
         return false;
+    int draw_start = asint(cb1[0].x);
 
     int string_start, string_end;
-    if (!find_string(glyph, instance_count, string_start, string_end))
+    if (!find_string(glyph, draw_start, draw_start + instance_count, string_start, string_end))
         return false;
     int string_length = string_end - string_start;
     if (string_length < MIN_DIGITS)
@@ -412,7 +414,7 @@ void main(
     // r1.xyzw = cb0[3].xyzw * r0.xxxx + r1.xyzw;
     // r0.xyzw = cb0[5].xyzw * r0.zzzz + r1.xyzw;
     // o1.xyzw = cb0[6].xyzw + r0.xyzw;
-    o1.xyzw = mul(float4(r0.xyz, 1), globals.projection);
+    o1.xyzw = globals.projection[0] * r0.x + globals.projection[1] * r0.y + globals.projection[2] * r0.z + globals.projection[3];
     // o3.xyzw = float4(0,0,0,0);
     o3.xyzw = float4(0,0,suffix_flag,0);
     o4.x = v1.x;
